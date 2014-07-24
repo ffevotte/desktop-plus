@@ -27,7 +27,7 @@
 
 ;; Centralized directory storing all desktop sessions:
 ;;
-;;     instead of relying on Emacs' starting directory to choose the session
+;;     Instead of relying on Emacs' starting directory to choose the session
 ;;     Emacs restarts, two functions are provided to manipulate sessions by
 ;;     name.
 ;;
@@ -37,7 +37,7 @@
 ;;          is identified by its name, as given during session creation using
 ;;          `desktop-create'.
 ;;
-;;     The currently active session is identified in the title bar. You can
+;;     The currently active session is identified in the title bar.  You can
 ;;     customize `desktop-frame-title-function' to change the way the active
 ;;     session is displayed.
 ;;
@@ -48,14 +48,27 @@
 (eval-when-compile
   (require 'desktop))
 
+;; * Named sessions
+
+;; ** Customizable options
+
 (defvar desktop-base-dir "~/.emacs.d/desktops/"
-  "Base directory for desktop files")
+  "Base directory for desktop files.")
+
+(defvar desktop-frame-title-function 'desktop+--frame-title
+  "Function returning the frame title when a desktop session is loaded.
+
+This function must accept the desktop name as a string argument
+and return a frame title format suitable for setting
+`frame-title-format'")
+
+;; ** Entry points
 
 ;;;###autoload
 (defun desktop-create ()
   "Create a new session, identified by a name.
 The session is created in a subdirectory of
-`desktop-base-dir'. It can afterwards be reloaded using
+`desktop-base-dir'.  It can afterwards be reloaded using
 `desktop-load'."
   (interactive)
   (when (or (not (boundp 'desktop-dirname))
@@ -64,36 +77,34 @@ The session is created in a subdirectory of
       (setq desktop-dirname (concat desktop-base-dir name))
       (make-directory desktop-dirname 'parents)))
   (desktop-save desktop-dirname)
-  (desktop--set-frame-title)
+  (desktop+--set-frame-title)
   (desktop-save-mode 1))
 
 ;;;###autoload
 (defun desktop-load (name)
-  "Load a session previously created using `desktop-create'."
+  "Load a session previously created using `desktop-create'.
+NAME is the name which was given at session creation.  When called
+interactively, it is asked in the minibuffer with
+auto-completion."
   (interactive
    (list
     (completing-read "Desktop name: "
                      (remove "." (remove ".." (directory-files desktop-base-dir))))))
   (desktop-change-dir (concat desktop-base-dir name))
-  (desktop--set-frame-title)
+  (desktop+--set-frame-title)
   (desktop-save-mode 1))
 
+;; ** Inner workings
 
-(defun desktop--frame-title (desktop-name)
+(defun desktop+--frame-title (desktop-name)
   "Default frame title function for sessions.
 
 Returns the following frame title format:
   '%b - Emacs [DESKTOP-NAME]'"
   (list (concat "%b - Emacs [" desktop-name "]")))
 
-(defvar desktop-frame-title-function 'desktop--frame-title
-  "Function returning the frame title when a desktop session is loaded.
 
-This function must accept the desktop name as a string argument
-and return a frame title format suitable for setting
-`frame-title-format'")
-
-(defun desktop--set-frame-title ()
+(defun desktop+--set-frame-title ()
   "Set the frame title to show the currently active session."
   (setq frame-title-format
         (funcall desktop-frame-title-function
