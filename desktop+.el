@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2014 François Févotte
 ;; Author:  François Févotte <fevotte@gmail.com>
-;; URL:
+;; URL: https://github.com/ffevotte/desktop-plus
 ;; Version: 0.1
 
 ;; This file is NOT part of Emacs
@@ -44,9 +44,16 @@
 ;;     All sessions managed this way are stored in the directory given by
 ;;     `desktop-base-dir'.
 
+;; Handling of special buffers:
+;;
+;;     Desktop sessions by default save only buffers associated to "real" files.
+;;     Desktop+ extends this by handling also "special buffers", such as those
+;;     in `compilation-mode' or `term-mode'.
+
 ;;; Code:
 (eval-when-compile
-  (require 'desktop))
+  (require 'desktop)
+  (require 'dash))
 
 ;; * Named sessions
 
@@ -109,6 +116,137 @@ Returns the following frame title format:
   (setq frame-title-format
         (funcall desktop-frame-title-function
                  (file-name-nondirectory (directory-file-name desktop-dirname)))))
+
+
+;; * Special buffers
+
+;; ** Customizable options
+
+(defvar desktop+/special-buffer-modes nil
+  "List of major modes to be handled.")
+
+;; ** Entry point
+
+;;;###autoload
+(defadvice desktop-save (before save-special-buffers activate)
+  "Also save special buffers."
+  (desktop+--buffers-save))
+
+;;;###autoload
+(defadvice desktop-change-dir (after restore-special-buffers activate)
+  "Also restore special buffers."
+  (desktop+--buffers-load))
+
+;; ** Mode-specific handlers for special buffers
+
+(defvar desktop+/special-buffer-handlers nil
+  "Alist of handlers for special buffers.")
+
+(defun desktop+/add-handlers (mode save-fn load-fn &optional activate)
+  "Add handlers for special buffers in the given MODE.
+
+SAVE-FN should be a function taking no parameter, returning a
+list of all relevant parameters for the current buffer, which is
+assumed to be in the given major mode.
+
+LOAD-FN should be a function of the following form:
+
+  lambda (name &rest args)
+
+allowing to restore a buffer named NAME in major mode MODE,
+from information stored in ARGS, as determined by SAVE-FN.
+
+If ACTIVATE is non-nil, also add MODE to the list of handled
+modes in `desktop+/special-buffer-modes'."
+  (declare (indent 1))
+  (when activate
+    (add-to-list 'desktop+/special-buffer-modes mode))
+  (push (list mode save-fn load-fn)
+        desktop+/special-buffer-handlers))
+
+;; *** Terminals
+
+(desktop+/add-handlers 'term-mode
+  (lambda ()
+    "Return relevant parameters for saving a terminal buffer."
+    (list :dir     default-directory
+          :command (car (last (process-command
+                               (get-buffer-process (current-buffer)))))))
+
+  (lambda (name &rest args)
+    "Restore a terminal buffer from saved parameters."
+    (when (null (get-buffer name))
+      (let ((default-directory (plist-get args :dir)))
+        (with-current-buffer (term (plist-get args :command))
+          (rename-buffer name))))))
+
+;; *** Compilation buffers
+
+(eval-when-compile
+  (require 'compile))
+
+(desktop+/add-handlers 'compilation-mode
+  (lambda ()
+    "Return relevant parameters for saving a compilation buffer."
+    (list :command `(quote ,compilation-arguments)
+          :dir     compilation-directory))
+
+  (lambda (name &rest args)
+    "Restore a compilation buffer from saved parameters."
+    (with-current-buffer (get-buffer-create name)
+      (compilation-mode)
+      (set (make-local-variable 'compilation-arguments) (plist-get args :command))
+      (set (make-local-variable 'compilation-directory) (plist-get args :dir)))))
+
+;; ** Inner workings
+
+(defun desktop+--buffers-file ()
+  "Name of the file where special buffers configuration will be saved."
+  (concat desktop-dirname "/.emacs-buffers"))
+
+(defun desktop+--fn-symbol (mode)
+  "Generate an uninterned symbol for the load handler of MODE buffers."
+  (make-symbol (format "desktop+--%s" (symbol-name mode))))
+
+(defun desktop+--buffers-save ()
+  "Persistently save special buffers.
+Information is kept in the file pointed to by `desktop+--buffers-file'."
+  (with-temp-buffer
+    (let* ((buffers
+            ;; List of all special buffers relevant information, as determined by
+            ;; the first function in `desktop+/special-buffer-handlers'.
+            (-remove
+             'null
+             (-map
+              (lambda (b)
+                (with-current-buffer b
+                  (let ((handler (assq major-mode desktop+/special-buffer-handlers)))
+                    (if (and handler
+                             (memq major-mode desktop+/special-buffer-modes))
+                        (let ((fn (desktop+--fn-symbol major-mode)))
+                          (append (list fn (buffer-name))
+                                  (funcall (nth 1 handler))))))))
+              (buffer-list))))
+           (defs
+             ;; Definition of the mode-specific loading handlers, as given by
+             ;; the second function in `desktop+/special-buffer-handlers'.
+             `(cl-letf ,(-map (lambda (handler)
+                                `((symbol-function
+                                   (quote ,(desktop+--fn-symbol (car handler))))
+                                  (lambda (name &rest args)
+                                    (message "Retrieving buffer %s" name)
+                                    (apply ,(nth 2 handler) name args))))
+                              desktop+/special-buffer-handlers)
+                ,@buffers)))
+      (pp defs (current-buffer)))
+    (write-region nil nil (desktop+--buffers-file))))
+
+(defun desktop+--buffers-load ()
+  "Load special buffers from the persistent session file.
+Information is kept in the file pointed to by
+`desktop+--buffers-file'."
+  (when (file-exists-p (desktop+--buffers-file))
+    (load-file (desktop+--buffers-file))))
 
 (provide 'desktop+)
 

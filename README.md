@@ -2,10 +2,14 @@
 
 `desktop+` extends `desktop` by providing more features related to sessions persistance.
 
-Instead of relying on Emacs' starting directory to choose the session Emacs restarts, sessions are manipulated by name. All information about them is stored into a centralized directory.
+
+1. Instead of relying on Emacs' starting directory to choose the session Emacs restarts, sessions are manipulated by name. All information about them is stored into a centralized directory.
+
+2. Desktop sessions by default save only buffers associated to "real" files. Desktop+ extends this by handling also "special buffers", such as those in `compilation-mode` or `term-mode`.
 
 
-## Installation
+
+## Installation and setup
 
 From `git`:
 
@@ -21,6 +25,13 @@ From `git`:
    (add-to-list 'load-path "/path/to/desktop-plus")
    (require 'desktop+)
    ```
+
+3. optionally register some major modes for special handling:
+
+    ```lisp
+    (add-to-list 'desktop+/special-buffer-modes 'term-mode)
+    (add-to-list 'desktop+/special-buffer-modes 'compilation-mode)
+    ```
 
 ## Usage
 
@@ -48,3 +59,18 @@ Once created or loaded, sessions are automatically saved when exiting emacs or c
     (setq desktop-frame-title-function
           'my/desktop-frame-title-function)
     ```
+
+- `desktop+/special-buffer-modes`: list of major modes for which buffers should be handled specially.
+
+
+## API
+
+- `(desktop+/add-handlers MODE SAVE-FN LOAD-FN &optional ACTIVATE)`
+
+    Add handlers for special buffers in the given MODE.
+    
+    SAVE-FN should be a function taking no parameter, returning a list of all relevant parameters for the current buffer, which is assumed to be in the given major mode.
+
+    LOAD-FN should be a function of the form `lambda (name &rest args)` allowing to restore a buffer named NAME in major mode MODE, from information stored in ARGS, as determined by SAVE-FN.
+    
+    If ACTIVATE is non-nil, also add MODE to the list of handled modes in `desktop+/special-buffer-modes`.
