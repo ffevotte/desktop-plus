@@ -204,41 +204,35 @@ modes in `desktop+/special-buffer-modes'."
   "Name of the file where special buffers configuration will be saved."
   (concat desktop-dirname "/.emacs-buffers"))
 
-(defun desktop+--fn-symbol (mode)
-  "Generate an uninterned symbol for the load handler of MODE buffers."
-  (make-symbol (format "desktop+--%s" (symbol-name mode))))
+(defun desktop+--create-buffer (mode name &rest args)
+  "Recreate a special buffer from saved parameters.
+MODE should be registered in `desktop+/special-buffer-handlers'.
+NAME is the name of the buffer.
+ARGS is the relevant buffer parameters, as determined by the first
+handler in `desktop+/special-buffer-handlers'.  These parameters
+will be restored by calling the second handler."
+
+  (let ((handler (assq mode desktop+/special-buffer-handlers)))
+    (when handler
+      (apply (nth 2 handler) name args))))
 
 (defun desktop+--buffers-save ()
   "Persistently save special buffers.
 Information is kept in the file pointed to by `desktop+--buffers-file'."
   (with-temp-buffer
-    (let* ((buffers
-            ;; List of all special buffers relevant information, as determined by
-            ;; the first function in `desktop+/special-buffer-handlers'.
-            (-remove
-             'null
-             (-map
-              (lambda (b)
-                (with-current-buffer b
-                  (let ((handler (assq major-mode desktop+/special-buffer-handlers)))
-                    (if (and handler
-                             (memq major-mode desktop+/special-buffer-modes))
-                        (let ((fn (desktop+--fn-symbol major-mode)))
-                          (append (list fn (buffer-name))
-                                  (funcall (nth 1 handler))))))))
-              (buffer-list))))
-           (defs
-             ;; Definition of the mode-specific loading handlers, as given by
-             ;; the second function in `desktop+/special-buffer-handlers'.
-             `(cl-letf ,(-map (lambda (handler)
-                                `((symbol-function
-                                   (quote ,(desktop+--fn-symbol (car handler))))
-                                  (lambda (name &rest args)
-                                    (message "Retrieving buffer %s" name)
-                                    (apply ,(nth 2 handler) name args))))
-                              desktop+/special-buffer-handlers)
-                ,@buffers)))
-      (pp defs (current-buffer)))
+    (mapc (lambda (b)
+            (let ((data
+                   (with-current-buffer b
+                     (let ((handler (assq major-mode desktop+/special-buffer-handlers)))
+                       (if (and handler
+                                (memq major-mode desktop+/special-buffer-modes))
+                           (append (list 'desktop+--create-buffer
+                                         `(quote ,major-mode)
+                                         (buffer-name))
+                                   (funcall (nth 1 handler))))))))
+              (if data
+                  (pp data (current-buffer)))))
+          (buffer-list))
     (write-region nil nil (desktop+--buffers-file))))
 
 (defun desktop+--buffers-load ()
