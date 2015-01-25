@@ -114,12 +114,10 @@ auto-completion."
 (defun desktop-load-auto ()
   "Load a session previously created using `desktop-create-auto'."
   (interactive)
-   (when (or (not (boundp 'desktop-dirname))
-            (null desktop-dirname))
-     (let ((name (replace-regexp-in-string "/" "-" default-directory)))
-       (desktop-change-dir (concat desktop-base-dir name)))
-    (desktop+--set-frame-title))
-   (desktop-save-mode 1))
+  (let ((name (replace-regexp-in-string "/" "-" default-directory)))
+    (desktop-change-dir (concat desktop-base-dir name))
+    (desktop+--set-frame-title)
+    (desktop-save-mode 1)))
 
 ;; ** Inner workings
 
