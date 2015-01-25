@@ -81,6 +81,22 @@ The session is created in a subdirectory of
   (desktop-save-mode 1))
 
 ;;;###autoload
+(defun desktop-create-auto ()
+  "Create a new session, identified by the current working directory.
+The session is created in a subdirectory of
+`desktop-base-dir'.  It can afterwards be reloaded using
+`desktop-load'."
+  (interactive)
+  (when (or (not (boundp 'desktop-dirname))
+            (null desktop-dirname))
+    (let ((name (replace-regexp-in-string "/" "-" default-directory)))
+      (setq desktop-dirname (concat desktop-base-dir name))
+      (make-directory desktop-dirname 'parents)))
+  (desktop-save desktop-dirname)
+  (desktop+--set-frame-title)
+  (desktop-save-mode 1))
+
+;;;###autoload
 (defun desktop-load (name)
   "Load a session previously created using `desktop-create'.
 NAME is the name which was given at session creation.  When called
@@ -93,6 +109,17 @@ auto-completion."
   (desktop-change-dir (concat desktop-base-dir name))
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
+
+;;;###autoload
+(defun desktop-load-auto ()
+  "Load a session previously created using `desktop-create-auto'."
+  (interactive)
+   (when (or (not (boundp 'desktop-dirname))
+            (null desktop-dirname))
+     (let ((name (replace-regexp-in-string "/" "-" default-directory)))
+       (desktop-change-dir (concat desktop-base-dir name)))
+    (desktop+--set-frame-title))
+   (desktop-save-mode 1))
 
 ;; ** Inner workings
 
