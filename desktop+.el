@@ -126,14 +126,15 @@ Returns the following frame title format:
 ;; ** Entry point
 
 ;;;###autoload
-(defadvice desktop-save (before save-special-buffers activate)
+(defun desktop-save--desktop+ (&rest args)
   "Also save special buffers."
   (desktop+--buffers-save))
+(advice-add 'desktop-save :before #'desktop-save--desktop+)
 
 ;;;###autoload
-(defadvice desktop-change-dir (after restore-special-buffers activate)
-  "Also restore special buffers."
+(defun desktop-restore-frameset--desktop+ (&rest args)
   (desktop+--buffers-load))
+(advice-add 'desktop-restore-frameset :before #'desktop-restore-frameset--desktop+)
 
 ;;;###autoload
 (defun desktop+/special-buffer-handlers ()
