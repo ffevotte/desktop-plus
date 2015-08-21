@@ -29,8 +29,8 @@ From `git`:
 3. optionally register some major modes for special handling:
 
     ```lisp
-    (add-to-list 'desktop+/special-buffer-modes 'term-mode)
-    (add-to-list 'desktop+/special-buffer-modes 'compilation-mode)
+    (add-to-list 'desktop+/special-buffer-handlers 'term-mode)
+    (add-to-list 'desktop+/special-buffer-handlers 'compilation-mode)
     ```
 
 ## Usage
@@ -55,7 +55,7 @@ Once created or loaded, sessions are automatically saved when exiting emacs or c
     ```lisp
     (defun my/desktop-frame-title-function (desktop-name)
       (list (concat "%b - Emacs [" desktop-name "]")))
-      
+
     (setq desktop-frame-title-function
           'my/desktop-frame-title-function)
     ```
@@ -65,12 +65,16 @@ Once created or loaded, sessions are automatically saved when exiting emacs or c
 
 ## API
 
-- `(desktop+/add-handlers MODE SAVE-FN LOAD-FN &optional ACTIVATE)`
+- `(desktop+/add-handler NAME PRED SAVE-FN LOAD-FN &optional ACTIVATE)`
 
-    Add handlers for special buffers in the given MODE.
-    
+    Add handlers for special buffers.
+
+    NAME is a symbol identifying the handler for later activation or deactivation.
+
+    PRED should be a unary function used as a predicate to determine whether a buffer should be handled specially. When called in a buffer which should be handled, PRED should return non-nil.  As a special case, if PRED is nil, NAME is interpreted as a major mode name for which to test.
+
     SAVE-FN should be a function taking no parameter, returning a list of all relevant parameters for the current buffer, which is assumed to be in the given major mode.
 
-    LOAD-FN should be a function of the form `lambda (name &rest args)` allowing to restore a buffer named NAME in major mode MODE, from information stored in ARGS, as determined by SAVE-FN.
-    
-    If ACTIVATE is non-nil, also add MODE to the list of handled modes in `desktop+/special-buffer-modes`.
+    LOAD-FN should be a function of the form `(lambda (name &rest args) ...)` allowing to restore a buffer named NAME in major mode MODE, from information stored in ARGS, as determined by SAVE-FN.
+
+    If ACTIVATE is non-nil, also add MODE to the list of handled modes in `desktop+/special-buffer-handlers`.

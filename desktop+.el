@@ -120,7 +120,7 @@ Returns the following frame title format:
 
 ;; ** Customizable options
 
-(defvar desktop+/special-buffer-modes nil
+(defvar desktop+/special-buffer-handlers nil
   "List of major modes to be handled.")
 
 ;; ** Entry point
@@ -137,11 +137,20 @@ Returns the following frame title format:
 
 ;; ** Mode-specific handlers for special buffers
 
-(defvar desktop+/special-buffer-handlers nil
+(defvar desktop+--special-buffer-handlers nil
   "Alist of handlers for special buffers.")
 
-(defun desktop+/add-handlers (mode save-fn load-fn &optional activate)
-  "Add handlers for special buffers in the given MODE.
+(defun desktop+/add-handler (name pred save-fn load-fn &optional activate)
+  "Add handlers for special buffers.
+
+NAME is a symbol identifying the handler for later activation or
+deactivation.
+
+PRED should be a unary function used as a predicate to determine
+whether a buffer should be handled specially. When called in a
+buffer which should be handled, PRED should return non-nil.
+As a special case, if PRED is nil, NAME is interpreted as a major
+mode name for which to test.
 
 SAVE-FN should be a function taking no parameter, returning a
 list of all relevant parameters for the current buffer, which is
@@ -149,22 +158,26 @@ assumed to be in the given major mode.
 
 LOAD-FN should be a function of the following form:
 
-  lambda (name &rest args)
+  (lambda (name &rest args) ...)
 
 allowing to restore a buffer named NAME in major mode MODE,
 from information stored in ARGS, as determined by SAVE-FN.
 
 If ACTIVATE is non-nil, also add MODE to the list of handled
-modes in `desktop+/special-buffer-modes'."
+modes in `desktop+/special-buffer-handlers'."
   (declare (indent 1))
+  (when (null pred)
+    (setq pred (eval `(lambda () (eq major-mode ',name)))))
   (when activate
-    (add-to-list 'desktop+/special-buffer-modes mode))
-  (push (list mode save-fn load-fn)
-        desktop+/special-buffer-handlers))
+    (add-to-list 'desktop+/special-buffer-handlers name))
+  (push (list name pred save-fn load-fn)
+        desktop+--special-buffer-handlers))
 
 ;; *** Terminals
 
-(desktop+/add-handlers 'term-mode
+(desktop+/add-handler 'term-mode
+  nil
+
   (lambda ()
     "Return relevant parameters for saving a terminal buffer."
     (list :dir     default-directory
@@ -183,7 +196,9 @@ modes in `desktop+/special-buffer-modes'."
 (eval-when-compile
   (require 'compile))
 
-(desktop+/add-handlers 'compilation-mode
+(desktop+/add-handler 'compilation-mode
+  nil
+
   (lambda ()
     "Return relevant parameters for saving a compilation buffer."
     (list :command `(quote ,compilation-arguments)
@@ -202,17 +217,19 @@ modes in `desktop+/special-buffer-modes'."
   "Name of the file where special buffers configuration will be saved."
   (concat desktop-dirname "/.emacs-buffers"))
 
-(defun desktop+--create-buffer (mode name &rest args)
+(defun desktop+--create-buffer (key name &rest args)
   "Recreate a special buffer from saved parameters.
-MODE should be registered in `desktop+/special-buffer-handlers'.
-NAME is the name of the buffer.
-ARGS is the relevant buffer parameters, as determined by the first
-handler in `desktop+/special-buffer-handlers'.  These parameters
-will be restored by calling the second handler."
 
-  (let ((handler (assq mode desktop+/special-buffer-handlers)))
+ should be registered in `desktop+--special-buffer-handlers'.
+
+NAME is the name of the buffer.
+
+ARGS is the relevant buffer parameters, as determined by the
+registered save handler.  These parameters will be restored by
+calling the load handler."
+  (let ((handler (assq key desktop+--special-buffer-handlers)))
     (when handler
-      (apply (nth 2 handler) name args))))
+      (apply (nth 3 handler) name args))))
 
 (defun desktop+--buffers-save ()
   "Persistently save special buffers.
@@ -221,13 +238,16 @@ Information is kept in the file pointed to by `desktop+--buffers-file'."
     (mapc (lambda (b)
             (let ((data
                    (with-current-buffer b
-                     (let ((handler (assq major-mode desktop+/special-buffer-handlers)))
-                       (if (and handler
-                                (memq major-mode desktop+/special-buffer-modes))
-                           (append (list 'desktop+--create-buffer
-                                         `(quote ,major-mode)
-                                         (buffer-name))
-                                   (funcall (nth 1 handler))))))))
+                     (let ((handler
+                            (--first
+                             (and (memq (nth 0 it) desktop+/special-buffer-handlers)
+                                  (funcall (nth 1 it)))
+                             desktop+--special-buffer-handlers)))
+                       (when handler
+                         (append `(desktop+--create-buffer
+                                   (quote ,(nth 0 handler))
+                                   ,(buffer-name))
+                                 (funcall (nth 2 handler))))))))
               (if data
                   (pp data (current-buffer)))))
           (buffer-list))
