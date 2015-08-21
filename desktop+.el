@@ -138,7 +138,8 @@ Returns the following frame title format:
 ;;;###autoload
 (defun desktop+/special-buffer-handlers ()
   (add-to-list 'desktop+/special-buffer-handlers 'term-mode)
-  (add-to-list 'desktop+/special-buffer-handlers 'compilation-mode))
+  (add-to-list 'desktop+/special-buffer-handlers 'compilation-mode)
+  (add-to-list 'desktop+/special-buffer-handlers 'indirect-buffer))
 
 ;; ** Mode-specific handlers for special buffers
 
@@ -215,6 +216,18 @@ modes in `desktop+/special-buffer-handlers'."
       (compilation-mode)
       (set (make-local-variable 'compilation-arguments) (plist-get args :command))
       (set (make-local-variable 'compilation-directory) (plist-get args :dir)))))
+
+;; *** Clones (indirect buffers)
+
+(desktop+/add-handler 'indirect-buffer
+  #'buffer-base-buffer
+
+  (lambda ()
+    `(:base ,(buffer-name (buffer-base-buffer))))
+
+  (lambda (name &rest args)
+    (with-current-buffer (get-buffer (plist-get args :base))
+      (clone-indirect-buffer name nil))))
 
 ;; ** Inner workings
 
