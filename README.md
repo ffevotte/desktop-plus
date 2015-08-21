@@ -26,7 +26,13 @@ From `git`:
    (require 'desktop+)
    ```
 
-3. optionally register some major modes for special handling:
+3. optionally register supported major modes for special handling:
+
+    ```lisp
+    (desktop+/special-buffer-handlers)
+    ```
+
+    or only some of them:
 
     ```lisp
     (add-to-list 'desktop+/special-buffer-handlers 'term-mode)

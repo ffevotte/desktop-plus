@@ -135,6 +135,11 @@ Returns the following frame title format:
   "Also restore special buffers."
   (desktop+--buffers-load))
 
+;;;###autoload
+(defun desktop+/special-buffer-handlers ()
+  (add-to-list 'desktop+/special-buffer-handlers 'term-mode)
+  (add-to-list 'desktop+/special-buffer-handlers 'compilation-mode))
+
 ;; ** Mode-specific handlers for special buffers
 
 (defvar desktop+--special-buffer-handlers nil
