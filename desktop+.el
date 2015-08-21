@@ -72,17 +72,15 @@ and return a frame title format suitable for setting
 ;; ** Entry points
 
 ;;;###autoload
-(defun desktop-create ()
+(defun desktop-create (name)
   "Create a new session, identified by a name.
 The session is created in a subdirectory of
 `desktop-base-dir'.  It can afterwards be reloaded using
 `desktop-load'."
-  (interactive)
-  (when (or (not (boundp 'desktop-dirname))
-            (null desktop-dirname))
-    (let ((name (read-from-minibuffer "Desktop name: ")))
-      (setq desktop-dirname (concat desktop-base-dir name))
-      (make-directory desktop-dirname 'parents)))
+  (interactive "MDesktop name: ")
+  (desktop-kill)
+  (setq desktop-dirname (concat desktop-base-dir name))
+  (make-directory desktop-dirname 'parents)
   (desktop-save desktop-dirname)
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
