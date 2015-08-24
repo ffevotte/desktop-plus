@@ -4,6 +4,7 @@
 ;; Author:  François Févotte <fevotte@gmail.com>
 ;; URL: https://github.com/ffevotte/desktop-plus
 ;; Version: 0.1
+;; Package-Requires: ((emacs "24") (dash "0") (f "0"))
 
 ;; This file is NOT part of Emacs
 
@@ -53,7 +54,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'desktop)
-  (require 'dash))
+  (require 'dash)
+  (require 'f))
 
 ;; * Named sessions
 
@@ -74,32 +76,63 @@ and return a frame title format suitable for setting
 ;;;###autoload
 (defun desktop-create (name)
   "Create a new session, identified by a name.
-The session is created in a subdirectory of
-`desktop-base-dir'.  It can afterwards be reloaded using
-`desktop-load'."
+The session is created in a subdirectory of `desktop-base-dir'.
+It can afterwards be reloaded using `desktop-load'.
+
+As a special case, if NAME is left blank, the session is
+automatically named after the current working directory."
   (interactive "MDesktop name: ")
   (desktop-kill)
-  (setq desktop-dirname (concat desktop-base-dir name))
+  (setq desktop-dirname (desktop+--dirname name))
   (make-directory desktop-dirname 'parents)
   (desktop-save desktop-dirname)
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
 
 ;;;###autoload
+(defun desktop-create-auto ()
+  "Create a new session, identified by the current working directory.
+The session is created in a subdirectory of `desktop-base-dir'.
+It can afterwards be reloaded using `desktop-load'."
+  (interactive)
+  (desktop-create ""))
+
+;;;###autoload
 (defun desktop-load (name)
   "Load a session previously created using `desktop-create'.
-NAME is the name which was given at session creation.  When called
-interactively, it is asked in the minibuffer with
-auto-completion."
+NAME is the name which was given at session creation.  When
+called interactively, it is asked in the minibuffer with
+auto-completion.
+
+As a special case, if NAME is left blank, the session is
+automatically named after the current working directory."
   (interactive
    (list
     (completing-read "Desktop name: "
                      (remove "." (remove ".." (directory-files desktop-base-dir))))))
-  (desktop-change-dir (concat desktop-base-dir name))
+  (desktop-change-dir (desktop+--dirname name))
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
 
+;;;###autoload
+(defun desktop-load-auto ()
+  "Load a session previously created using `desktop-create-auto'.
+The session is identified by the current working directory."
+  (interactive)
+  (desktop-load ""))
+
 ;; ** Inner workings
+
+(defun desktop+--dirname (name)
+  "Path to the desktop identified by NAME.
+As a special case, if NAME is blank, the directory is identified
+by the current working directory.
+
+This path is located under `desktop-base-dir'. "
+  (concat desktop-base-dir
+          (if (string= "" name)
+              (replace-regexp-in-string "/" "-" (f-canonical default-directory))
+            name)))
 
 (defun desktop+--frame-title (desktop-name)
   "Default frame title function for sessions.

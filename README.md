@@ -11,6 +11,8 @@
 
 ## Installation and setup
 
+`desktop+` requires [`dash`](http://github.com/magnars/dash.el) and [`f`](http://github.com/rejeep/f.el), which can easily be installed through MELPA.
+
 From `git`:
 
 1. get the repository:
@@ -41,14 +43,51 @@ From `git`:
 
 ## Usage
 
+### From Emacs
+
+#### Named sessions
+
 Two functions are defined to manipulate desktop sessions by name:
 
 - `desktop-create`: create a new session and give it a name.
 
 - `desktop-load`: change the current session; the new session to be loaded is identified by its name, as given during session creation using `desktop-create`. The currently active session is identified in the title bar.
 
+As a special case, if the session name is left blank when calling one of these two functions, a name is automatically derived from the current working directory (see "Auto-named sessions" below).
+
 Once created or loaded, sessions are automatically saved when exiting emacs or changing session.
 
+#### Auto-named sessions
+
+It is also possible to create and load sessions without explicitly specifying a name. These sessions are then automatically named after the current working directory. This can be done either by leaving the session name blank when calling `desktop-create` or `desktop-load`, or by using their dedicated counterparts:
+
+- `desktop-create-auto`: create a new auto-named session.
+
+- `desktop-load-auto`: load a previously created auto-named session.
+
+
+### From the shell command-line
+
+If you want to invoke Emacs from the command-line and specify a session to load at startup, you can define the following useful bash function:
+
+```sh
+function emacs-desktop () {
+  emacs --eval '(desktop-load "'"$1"'")'
+}
+```
+
+You can then invoke a named session directly from the command-line:
+
+```sh
+$ emacs-desktop my-session
+```
+
+or an auto-named session:
+
+```sh
+$ cd /path/to/working/directory
+$ emacs-desktop
+```
 
 ## Customization
 
