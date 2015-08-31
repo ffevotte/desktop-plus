@@ -9,37 +9,28 @@
 
 
 
-## Installation and setup
+## Installation
 
-`desktop+` requires [`dash`](http://github.com/magnars/dash.el) and [`f`](http://github.com/rejeep/f.el), which can easily be installed through MELPA.
+`desktop+` can be found on MELPA and it's the recommended way of installing it.
 
-From `git`:
+Otherwise, you can install it manually. First install `desktop+` dependencies:
+[`dash`](http://github.com/magnars/dash.el) and
+[`f`](http://github.com/rejeep/f.el). Then:
 
-1. get the repository:
+1. clone the git repository:
 
    ```sh
    $ git clone https://github.com/ffevotte/desktop-plus.git
    ```
 
-2. add the following snippet to your init file:
+2. tell emacs where to find it, for example by adding a snippet like this in
+   your `init.el` file:
 
    ```lisp
    (add-to-list 'load-path "/path/to/desktop-plus")
    (require 'desktop+)
    ```
 
-3. optionally register supported major modes for special handling:
-
-    ```lisp
-    (desktop+/special-buffer-handlers)
-    ```
-
-    or only some of them:
-
-    ```lisp
-    (add-to-list 'desktop+/special-buffer-handlers 'term-mode)
-    (add-to-list 'desktop+/special-buffer-handlers 'compilation-mode)
-    ```
 
 ## Usage
 
@@ -91,9 +82,9 @@ $ emacs-desktop
 
 ## Customization
 
-- `desktop-base-dir`: directory where all information about desktop sessions are stored. The default value is `"~/.emacs.d/desktops/"`.
+- `desktop+-base-dir`: directory where all information about desktop sessions are stored. The default value is `"~/.emacs.d/desktops/"`.
 
-- `desktop-frame-title-function`: function called to get the new frame title format when the session changes. This function must take the desktop session name as a string argument and return a frame title format suitable for setting `frame-title-format`.
+- `desktop+-frame-title-function`: function called to get the new frame title format when the session changes. This function must take the desktop session name as a string argument and return a frame title format suitable for setting `frame-title-format`.
 
   Customize it to change the way session names are displayed. For example:
 
@@ -101,16 +92,27 @@ $ emacs-desktop
     (defun my/desktop-frame-title-function (desktop-name)
       (list (concat "%b - Emacs [" desktop-name "]")))
 
-    (setq desktop-frame-title-function
+    (setq desktop+-frame-title-function
           'my/desktop-frame-title-function)
     ```
 
-- `desktop+/special-buffer-modes`: list of major modes for which buffers should be handled specially.
+- `desktop+-special-buffer-handlers`: list of special buffer types which should
+  be handled specially. The default value contains all known types. You can
+  remove some of them if you want.
+
+    ```lisp
+    ;; remove items from the list if you don't want a specific special buffer
+    ;; type to be handled
+    (setq desktop+-special-buffer-handlers
+          '(term-mode
+            compilation-mode
+            indirect-buffer))
+    ```
 
 
 ## API
 
-- `(desktop+/add-handler NAME PRED SAVE-FN LOAD-FN &optional ACTIVATE)`
+- `(desktop+-add-handler NAME PRED SAVE-FN LOAD-FN &optional ACTIVATE)`
 
     Add handlers for special buffers.
 
@@ -122,4 +124,29 @@ $ emacs-desktop
 
     LOAD-FN should be a function of the form `(lambda (name &rest args) ...)` allowing to restore a buffer named NAME in major mode MODE, from information stored in ARGS, as determined by SAVE-FN.
 
-    If ACTIVATE is non-nil, also add MODE to the list of handled modes in `desktop+/special-buffer-handlers`.
+    If ACTIVATE is non-nil, also add MODE to the list of handled modes in `desktop+-special-buffer-handlers`.
+
+
+## Contributing
+
+If you make improvements to this code or have suggestions, please do not
+hesitate to fork the repository or submit bug reports on
+[github](https://github.com/ffevotte/desktop-plus). The repository's URL is:
+
+    https://github.com/ffevotte/desktop-plus.git
+
+
+## License
+
+Copyright (C) 2014-2015 François Févotte.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not,
+see <http://www.gnu.org/licenses/>.
