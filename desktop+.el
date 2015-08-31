@@ -53,9 +53,10 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'desktop)
-  (require 'dash)
-  (require 'f))
+  (require 'dash))
+
+(require 'desktop)
+(require 'f)
 
 ;; * Named sessions
 
