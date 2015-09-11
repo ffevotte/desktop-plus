@@ -1,4 +1,4 @@
-# desktop+
+# desktop+ [![MELPA](http://melpa.org/packages/desktop+-badge.svg)](http://melpa.org/#/desktop%2B)
 
 `desktop+` extends `desktop` by providing more features related to sessions persistance.
 
