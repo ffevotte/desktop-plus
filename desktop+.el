@@ -236,23 +236,24 @@ modes in variable `desktop+-special-buffer-handlers'."
 
 ;; *** Compilation buffers
 
-(eval-when-compile
-  (require 'compile))
+(defun desktop+--compilation-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--compilation-save-buffer))
+(add-hook 'compilation-mode-hook 'desktop+--compilation-mode-hook)
 
-(desktop+-add-handler 'compilation-mode
-  nil
+(defun desktop+--compilation-save-buffer (dirname)
+  "Return relevant parameters for saving a compilation buffer."
+  (list :command compilation-arguments
+        :dir     compilation-directory))
 
-  (lambda ()
-    "Return relevant parameters for saving a compilation buffer."
-    (list :command `(quote ,compilation-arguments)
-          :dir     compilation-directory))
-
-  (lambda (name &rest args)
-    "Restore a compilation buffer from saved parameters."
-    (with-current-buffer (get-buffer-create name)
-      (compilation-mode)
-      (set (make-local-variable 'compilation-arguments) (plist-get args :command))
-      (set (make-local-variable 'compilation-directory) (plist-get args :dir)))))
+(add-to-list 'desktop-buffer-mode-handlers
+             '(compilation-mode . desktop+--compilation-restore-buffer))
+(defun desktop+--compilation-restore-buffer (file-name buffer-name misc)
+  "Restore a compilation buffer."
+  (with-current-buffer (get-buffer-create buffer-name)
+    (compilation-mode)
+    (set (make-local-variable 'compilation-arguments) (plist-get misc :command))
+    (set (make-local-variable 'compilation-directory) (plist-get misc :dir))
+    (current-buffer)))
 
 ;; *** Clones (indirect buffers)
 
