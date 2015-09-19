@@ -17,7 +17,8 @@ Feature: Create and load sessions
     When I call M-x "desktop+-load" RET "named-session" RET
     Then Buffer "foo" should exist
 
-    Given I call "emacs-lisp-mode"
+    Given I switch to buffer "foo"
+    And   I call "emacs-lisp-mode"
     And   I call M-x "desktop+-create" RET "new-session" RET
     And   I call M-x "kill-buffer" RET "foo" RET
     When I call M-x "desktop+-load" RET "named-session" RET

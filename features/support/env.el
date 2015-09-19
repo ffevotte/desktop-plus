@@ -14,6 +14,9 @@
 
 (add-to-list 'load-path desktop+-root-path)
 
+(require 'undercover)
+(undercover "*.el")
+
 (require 'desktop+)
 (require 'espuds)
 (require 'ert)
@@ -25,6 +28,8 @@
    (f-delete desktop+-sandbox-path :force))
  (f-mkdir desktop+-sandbox-path)
 
+ (add-to-list 'desktop-clear-preserve-buffers "desktop\\+.el")
+ (find-file "desktop+.el")
  (setq test/initial-buffers (buffer-list)))
 
 (Before

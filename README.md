@@ -1,4 +1,5 @@
-# desktop+ [![MELPA](http://melpa.org/packages/desktop+-badge.svg)](http://melpa.org/#/desktop%2B)
+# desktop+
+[![Build-Status](https://travis-ci.org/ffevotte/desktop-plus.svg)](https://travis-ci.org/ffevotte/desktop-plus) [![Coverage-Status](https://coveralls.io/repos/ffevotte/desktop-plus/badge.svg?branch=master&service=github)](https://coveralls.io/github/ffevotte/desktop-plus?branch=master) [![Tag](https://img.shields.io/github/tag/ffevotte/desktop-plus.svg)](https://github.com/ffevotte/desktop-plus/releases) [![MELPA](http://melpa.org/packages/desktop+-badge.svg)](http://melpa.org/#/desktop%2B) [![License](https://img.shields.io/badge/license-GPL_v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0.html)
 
 `desktop+` extends `desktop` by providing more features related to sessions persistance.
 
