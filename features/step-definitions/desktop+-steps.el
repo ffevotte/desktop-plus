@@ -29,6 +29,10 @@
         (When (format "I type \"%s\"" arg))
         (When "I execute the action chain")))
 
+(When "I rename the buffer \"\\([^\"]+\\)\"$"
+      (lambda (name)
+        (rename-buffer name)))
+
 (Then "^Desktop session \"\\([^\"]+\\)\" should exist$"
       (lambda (session)
         (let ((path (f-expand session desktop+-base-dir)))

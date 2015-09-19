@@ -12,11 +12,12 @@ Feature: Handle special buffers
     And    I press "RET C-S-<backspace>"
     And    I type "/bin/cat"
     And    I execute the action chain
+    And  I rename the buffer "*my-terminal*"
 
     Given I am in a fresh Emacs instance
     When I call M-x "desktop-load" RET "terminal" RET
-    Then Buffer "*terminal*" should exist
-    When I switch to buffer "*terminal*"
+    Then Buffer "*my-terminal*" should exist
+    When I switch to buffer "*my-terminal*"
     Then Variable "default-directory" should be "/tmp/"
     And  Program "/bin/cat" should be running
 

@@ -218,21 +218,25 @@ modes in variable `desktop+-special-buffer-handlers'."
 
 ;; *** Terminals
 
-(desktop+-add-handler 'term-mode
-  nil
+(defun desktop+--term-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--terminal-save-buffer))
+(add-hook 'term-mode-hook 'desktop+--term-mode-hook)
 
-  (lambda ()
-    "Return relevant parameters for saving a terminal buffer."
-    (list :dir     default-directory
-          :command (car (last (process-command
-                               (get-buffer-process (current-buffer)))))))
+(defun desktop+--terminal-save-buffer (dirname)
+  "Return relevant parameters for saving a terminal buffer."
+  (list :dir     default-directory
+        :command (car (last (process-command
+                             (get-buffer-process (current-buffer)))))))
 
-  (lambda (name &rest args)
-    "Restore a terminal buffer from saved parameters."
-    (when (null (get-buffer name))
-      (let ((default-directory (plist-get args :dir)))
-        (with-current-buffer (term (plist-get args :command))
-          (rename-buffer name))))))
+(add-to-list 'desktop-buffer-mode-handlers
+             '(term-mode . desktop+--terminal-restore-buffer))
+(defun desktop+--terminal-restore-buffer (file-name buffer-name misc)
+  "Restore a terminal buffer."
+  (when (null (get-buffer buffer-name))
+    (let ((default-directory (plist-get misc :dir)))
+      (with-current-buffer (term (plist-get misc :command))
+        (rename-buffer buffer-name)
+        (current-buffer)))))
 
 ;; *** Compilation buffers
 
