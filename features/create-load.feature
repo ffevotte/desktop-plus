@@ -26,3 +26,25 @@ Feature: Create and load sessions
 
     When I switch to buffer "foo"
     Then Variable "major-mode" should be "emacs-lisp-mode"
+
+  Scenario: Create & load autonamed sessions
+    Given I am in a fresh Emacs instance
+    And   I switch to directory "my-project"
+
+    Given I start an action chain
+    And     I press "M-x"
+    And     I type "desktop+-create"
+    And     I press "RET RET"
+    And     I execute the action chain
+    And   I start an action chain
+    And     I press "C-x C-f"
+    And     I type "/tmp/foo"
+    And     I execute the action chain
+    And   I type "something"
+    And   I press "C-x C-s"
+
+    Given I am in a fresh Emacs instance
+    And   I switch to directory "my-project"
+
+    When I call "desktop+-load-auto"
+    Then Buffer "foo" should exist

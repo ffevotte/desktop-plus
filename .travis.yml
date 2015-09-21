@@ -21,4 +21,4 @@ env:
 script:
   - emacs --version
   - make check
-  - grep -r . sandbox
+  - grep -r . sandbox/desktops

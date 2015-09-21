@@ -156,7 +156,7 @@ Returns the following frame title format:
 
 ;; ** Customizable options
 
-(defvar special-buffer-handlers
+(defvar desktop+-special-buffer-handlers
   '(term-mode
     compilation-mode
     indirect-buffer)
@@ -192,8 +192,6 @@ deactivation.
 PRED should be a unary function used as a predicate to determine
 whether a buffer should be handled specially.  When called in a
 buffer which should be handled, PRED should return non-nil.
-As a special case, if PRED is nil, NAME is interpreted as a major
-mode name for which to test.
 
 SAVE-FN should be a function taking no parameter, returning a
 list of all relevant parameters for the current buffer, which is
@@ -209,8 +207,6 @@ from information stored in ARGS, as determined by SAVE-FN.
 If ACTIVATE is non-nil, also add MODE to the list of handled
 modes in variable `desktop+-special-buffer-handlers'."
   (declare (indent 1))
-  (when (null pred)
-    (setq pred (eval `(lambda () (eq major-mode ',name)))))
   (when activate
     (add-to-list 'desktop+-special-buffer-handlers name))
   (push (list name pred save-fn load-fn)
@@ -220,7 +216,6 @@ modes in variable `desktop+-special-buffer-handlers'."
 
 (defun desktop+--term-mode-hook ()
   (setq desktop-save-buffer #'desktop+--terminal-save-buffer))
-(add-hook 'term-mode-hook 'desktop+--term-mode-hook)
 
 (defun desktop+--terminal-save-buffer (dirname)
   "Return relevant parameters for saving a terminal buffer."
@@ -228,8 +223,6 @@ modes in variable `desktop+-special-buffer-handlers'."
         :command (car (last (process-command
                              (get-buffer-process (current-buffer)))))))
 
-(add-to-list 'desktop-buffer-mode-handlers
-             '(term-mode . desktop+--terminal-restore-buffer))
 (defun desktop+--terminal-restore-buffer (file-name buffer-name misc)
   "Restore a terminal buffer."
   (when (null (get-buffer buffer-name))
@@ -238,19 +231,21 @@ modes in variable `desktop+-special-buffer-handlers'."
         (rename-buffer buffer-name)
         (current-buffer)))))
 
+(when (memq 'term-mode desktop+-special-buffer-handlers)
+  (add-hook 'term-mode-hook 'desktop+--term-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(term-mode . desktop+--terminal-restore-buffer)))
+
 ;; *** Compilation buffers
 
 (defun desktop+--compilation-mode-hook ()
   (setq desktop-save-buffer #'desktop+--compilation-save-buffer))
-(add-hook 'compilation-mode-hook 'desktop+--compilation-mode-hook)
 
 (defun desktop+--compilation-save-buffer (dirname)
   "Return relevant parameters for saving a compilation buffer."
   (list :command compilation-arguments
         :dir     compilation-directory))
 
-(add-to-list 'desktop-buffer-mode-handlers
-             '(compilation-mode . desktop+--compilation-restore-buffer))
 (defun desktop+--compilation-restore-buffer (file-name buffer-name misc)
   "Restore a compilation buffer."
   (with-current-buffer (get-buffer-create buffer-name)
@@ -258,6 +253,11 @@ modes in variable `desktop+-special-buffer-handlers'."
     (set (make-local-variable 'compilation-arguments) (plist-get misc :command))
     (set (make-local-variable 'compilation-directory) (plist-get misc :dir))
     (current-buffer)))
+
+(when (memq 'compilation-mode desktop+-special-buffer-handlers)
+  (add-hook 'compilation-mode-hook 'desktop+--compilation-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(compilation-mode . desktop+--compilation-restore-buffer)))
 
 ;; *** Clones (indirect buffers)
 
@@ -301,7 +301,7 @@ Information is kept in the file pointed to by `desktop+--buffers-file'."
                    (with-current-buffer b
                      (let ((handler
                             (--first
-                             (and (memq (nth 0 it) special-buffer-handlers)
+                             (and (memq (nth 0 it) desktop+-special-buffer-handlers)
                                   (funcall (nth 1 it)))
                              desktop+--special-buffer-handlers-alist)))
                        (when handler

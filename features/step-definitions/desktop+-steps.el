@@ -7,17 +7,18 @@
          (desktop-kill)
          (setq desktop-dirname nil)
          (desktop-save-mode -1)
-         (cd "~")
          (letf (((symbol-function 'yes-or-no-p)
                  (lambda (&args) t)))
            (mapc (lambda (buffer)
                    (when (not (memq buffer test/initial-buffers))
                      (kill-buffer buffer)))
                  (buffer-list)))
-         (switch-to-buffer "*scratch*")))
+         (switch-to-buffer "*scratch*")
+         (cd desktop+-sandbox-path)))
 
 (Given "^I switch to directory \"\\([^\"]+\\)\"$"
        (lambda (name)
+         (message "%s" default-directory)
          (cd name)))
 
 (When "^I call M-x \"\\([^\"]+\\)\" RET \"\\([^\"]+\\)\" RET$"

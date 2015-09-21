@@ -23,10 +23,12 @@
 (require 'cl)
 
 (Setup
- (setq desktop+-base-dir (concat desktop+-sandbox-path "/"))
+ (setq desktop+-base-dir (concat desktop+-sandbox-path "/desktops/"))
  (when (f-exists? desktop+-sandbox-path)
    (f-delete desktop+-sandbox-path :force))
  (f-mkdir desktop+-sandbox-path)
+ (f-mkdir desktop+-base-dir)
+ (f-mkdir (concat desktop+-sandbox-path "/my-project"))
 
  (add-to-list 'desktop-clear-preserve-buffers "desktop\\+.el")
  (find-file "desktop+.el")
