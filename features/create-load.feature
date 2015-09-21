@@ -31,11 +31,7 @@ Feature: Create and load sessions
     Given I am in a fresh Emacs instance
     And   I switch to directory "my-project"
 
-    Given I start an action chain
-    And     I press "M-x"
-    And     I type "desktop+-create"
-    And     I press "RET RET"
-    And     I execute the action chain
+    Given I call "desktop+-create-auto"
     And   I start an action chain
     And     I press "C-x C-f"
     And     I type "/tmp/foo"

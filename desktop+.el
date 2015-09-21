@@ -183,7 +183,7 @@ Returns the following frame title format:
 (defvar desktop+--special-buffer-handlers-alist nil
   "Alist of handlers for special buffers.")
 
-(defun desktop+-add-handler (name pred save-fn load-fn &optional activate)
+(defun desktop+-add-handler (name pred save-fn load-fn)
   "Add handlers for special buffers.
 
 NAME is a symbol identifying the handler for later activation or
@@ -202,13 +202,8 @@ LOAD-FN should be a function of the following form:
   (lambda (name &rest args) ...)
 
 allowing to restore a buffer named NAME in major mode MODE,
-from information stored in ARGS, as determined by SAVE-FN.
-
-If ACTIVATE is non-nil, also add MODE to the list of handled
-modes in variable `desktop+-special-buffer-handlers'."
+from information stored in ARGS, as determined by SAVE-FN."
   (declare (indent 1))
-  (when activate
-    (add-to-list 'desktop+-special-buffer-handlers name))
   (push (list name pred save-fn load-fn)
         desktop+--special-buffer-handlers-alist))
 
