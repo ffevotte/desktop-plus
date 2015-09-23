@@ -307,7 +307,7 @@ Information is kept in the file pointed to by `desktop+--buffers-file'."
               (if data
                   (pp data (current-buffer)))))
           (buffer-list))
-    (write-region nil nil (desktop+--buffers-file))))
+    (write-region nil nil (desktop+--buffers-file) nil 'quiet)))
 
 (defun desktop+--buffers-load ()
   "Load special buffers from the persistent session file.
