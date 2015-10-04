@@ -6,7 +6,11 @@
 
 1. Instead of relying on Emacs' starting directory to choose the session Emacs restarts, sessions are manipulated by name. All information about them is stored into a centralized directory.
 
-2. Desktop sessions by default save only buffers associated to "real" files. Desktop+ extends this by handling also "special buffers", such as those in `compilation-mode` or `term-mode`.
+2. Desktop sessions by default save only buffers associated to "real" files. Desktop+ extends this by handling also "special buffers". The list of currently supported special buffer types is:
+     - compilation buffers (in `compilation-mode`)
+     - terminal buffers (in `term-mode`)
+     - org agenda & todo lists (in `org-agenda-mode`)
+     - indirect buffers (a.k.a clones).
 
 
 
@@ -103,10 +107,13 @@ $ emacs-desktop
 
     ```lisp
     ;; remove items from the list if you don't want a specific special buffer
-    ;; type to be handled
+    ;; type to be handled.
+    ;;
+    ;; The value of this variable should be changed before `desktop+` is loaded.
     (setq desktop+-special-buffer-handlers
           '(term-mode
             compilation-mode
+            org-agenda-mode
             indirect-buffer))
     ```
 
