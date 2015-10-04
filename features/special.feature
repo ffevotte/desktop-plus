@@ -63,3 +63,45 @@ Feature: Handle special buffers
     And  Buffer "foo<2>" should exist
     When I switch to buffer "foo<2>"
     Then I should see pattern "some content"
+
+
+  Scenario: Handle org agenda buffer
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-create" RET "org-agenda-list" RET
+    Then Desktop session "org-agenda-list" should exist
+
+    Given I start an action chain
+    And     I press "M-x"
+    And     I type "org-agenda"
+    And     I press "RET"
+    And     I press "a"
+    And     I execute the action chain
+    Then Buffer "*Org Agenda*" should exist
+
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-load" RET "org-agenda-list" RET
+    Then Buffer "*Org Agenda*" should exist
+
+    Given I switch to buffer "*Org Agenda*"
+    Then I should see "Monday"
+
+
+  Scenario: Handle org todo buffer
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-create" RET "org-todo-list" RET
+    Then Desktop session "org-todo-list" should exist
+
+    Given I start an action chain
+    And     I press "M-x"
+    And     I type "org-agenda"
+    And     I press "RET"
+    And     I press "t"
+    And     I execute the action chain
+    Then Buffer "*Org Agenda*" should exist
+
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-load" RET "org-todo-list" RET
+    Then Buffer "*Org Agenda*" should exist
+
+    Given I switch to buffer "*Org Agenda*"
+    Then I should see "TODO"

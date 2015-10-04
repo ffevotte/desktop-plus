@@ -159,6 +159,7 @@ Returns the following frame title format:
 (defvar desktop+-special-buffer-handlers
   '(term-mode
     compilation-mode
+    org-agenda-mode
     indirect-buffer)
   "List of special buffers to handle.")
 
@@ -253,6 +254,35 @@ from information stored in ARGS, as determined by SAVE-FN."
   (add-hook 'compilation-mode-hook 'desktop+--compilation-mode-hook)
   (add-to-list 'desktop-buffer-mode-handlers
                '(compilation-mode . desktop+--compilation-restore-buffer)))
+
+;; *** Org Agenda buffers
+
+(defun desktop+--org-agenda-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--org-agenda-save-buffer))
+
+(defun desktop+--org-agenda-save-buffer (dirname)
+  "Return relevant parameters for saving an org agenda buffer."
+  (list :dir  default-directory
+        :type org-agenda-type))
+
+(defun desktop+--org-agenda-restore-buffer (file-name buffer-name misc)
+  "Restore an org agenda buffer."
+  (let ((default-directory (plist-get misc :dir)))
+    (save-window-excursion
+      (cond
+       ((eq (plist-get misc :type) 'todo)
+        (org-todo-list))
+       ((eq (plist-get misc :type) 'agenda)
+        (org-agenda-list))
+       (t
+        (error "unknown org-agenda-type")))
+      (rename-buffer buffer-name)
+      (current-buffer))))
+
+(when (memq 'org-agenda-mode desktop+-special-buffer-handlers)
+  (add-hook 'org-agenda-mode-hook 'desktop+--org-agenda-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(org-agenda-mode . desktop+--org-agenda-restore-buffer)))
 
 ;; *** Clones (indirect buffers)
 
