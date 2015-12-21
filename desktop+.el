@@ -72,7 +72,7 @@ This function must accept the desktop name as a string argument
 and return a frame title format suitable for setting
 `frame-title-format'")
 
-(defvar destop+-use-ido nil
+(defvar desktop+-use-ido nil
   "Whether to use ido-mode.")
 
 ;; ** Entry points
