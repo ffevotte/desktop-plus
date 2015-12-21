@@ -72,6 +72,9 @@ This function must accept the desktop name as a string argument
 and return a frame title format suitable for setting
 `frame-title-format'")
 
+(defvar destop+-use-ido nil
+  "Whether to use ido-mode.")
+
 ;; ** Entry points
 
 ;;;###autoload
@@ -109,10 +112,15 @@ As a special case, if NAME is left blank, the session is
 automatically named after the current working directory."
   (interactive
    (list
-    (completing-read "Desktop name: "
-                     (remove "."
-                             (remove ".."
-                                     (directory-files desktop+-base-dir))))))
+    (if desktop+-use-ido
+        (ido-completing-read "Desktop name: "
+                             (remove "."
+                                     (remove ".."
+                                             (directory-files desktop+-base-dir))))
+      (completing-read "Desktop name: "
+                       (remove "."
+                               (remove ".."
+                                       (directory-files desktop+-base-dir)))))))
   (desktop-change-dir (desktop+--dirname name))
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
