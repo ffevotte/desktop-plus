@@ -300,7 +300,7 @@ from information stored in ARGS, as determined by SAVE-FN."
 
 (defun desktop+--buffers-file ()
   "Name of the file where special buffers configuration will be saved."
-  (concat desktop-dirname "/.emacs-buffers"))
+  (concat desktop-dirname ".emacs-buffers"))
 
 (defun desktop+--create-buffer (key name &rest args)
   "Recreate a special buffer from saved parameters.
