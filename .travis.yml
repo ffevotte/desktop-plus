@@ -15,9 +15,10 @@ before_install:
   # Install dependencies
   - cask
 env:
-  - EVM_EMACS=emacs-24.4-bin 
-  - EVM_EMACS=emacs-24.5-bin
-  - EMACS=emacs-snapshot
+  - EVM_EMACS=emacs-24.4-travis
+  - EVM_EMACS=emacs-24.5-travis
+  - EVM_EMACS=emacs-git-snapshot-travis
+  # - EMACS=emacs-snapshot
 script:
   - emacs --version
   - make check
