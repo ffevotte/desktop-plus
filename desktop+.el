@@ -132,7 +132,7 @@ As a special case, if NAME is blank, the directory is identified
 by the current working directory.
 
 This path is located under `desktop+-base-dir'."
-  (concat desktop+-base-dir
+  (f-join desktop+-base-dir
           (if (string= "" name)
               (replace-regexp-in-string "/" "-" (f-canonical default-directory))
             name)))
@@ -347,7 +347,7 @@ variables and other state are lost."
 
 (defun desktop+--buffers-file ()
   "Name of the file where special buffers configuration will be saved."
-  (concat desktop-dirname ".emacs-buffers"))
+  (f-join desktop-dirname ".emacs-buffers"))
 
 (defun desktop+--create-buffer (key name &rest args)
   "Recreate a special buffer from saved parameters.
