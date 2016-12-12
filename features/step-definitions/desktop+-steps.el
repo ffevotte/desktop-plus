@@ -62,3 +62,12 @@
           (cl-assert (string= program command) nil
                      "Expected process `%s' to be running; found `%s' instead"
                      program command))))
+
+(Given "^I sleep for \"\\([0-9]+\\)\" seconds?$"
+       (lambda (seconds callback)
+         (let* ((target (+ (float-time) (string-to-number seconds))))
+           ;; sometimes `sleep-for' returns early...
+           ;; circumvent this by busy-waiting until enough time has passed
+           (while (< (float-time) target)
+             (sleep-for (- target (float-time))))
+           (funcall callback))))
