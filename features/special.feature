@@ -105,3 +105,25 @@ Feature: Handle special buffers
 
     Given I switch to buffer "*Org Agenda*"
     Then I should see "TODO"
+
+
+  Scenario: Handle man buffer
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-create" RET "man" RET
+    Then Desktop session "man" should exist
+
+    When  I start an action chain
+    And    I press "M-x"
+    And    I type "man"
+    And    I press "RET cat"
+    And    I execute the action chain
+    Given I sleep for "1" second
+    Then Buffer "*Man cat*" should exist
+
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-load" RET "man" RET
+    Given I sleep for "1" second
+    Then Buffer "*Man cat*" should exist
+
+    Given I switch to buffer "*Man cat*"
+    Then I should see "CAT"
