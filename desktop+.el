@@ -160,7 +160,8 @@ Returns the following frame title format:
   '(term-mode
     compilation-mode
     org-agenda-mode
-    indirect-buffer)
+    indirect-buffer
+    Man-mode)
   "List of special buffers to handle.")
 
 ;; ** Entry point
@@ -295,6 +296,25 @@ from information stored in ARGS, as determined by SAVE-FN."
   (lambda (name &rest args)
     (with-current-buffer (get-buffer (plist-get args :base))
       (clone-indirect-buffer name nil))))
+
+;; *** Man-mode buffers
+
+(defun desktop+--Man-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--Man-save-buffer))
+
+(defun desktop+--Man-save-buffer (dirname)
+  "Return relevant parameters for saving a `Man-mode' buffer."
+  (list :arguments Man-arguments))
+
+(defun desktop+--Man-restore-buffer (file-name buffer-name misc)
+  "Restore a `Man-mode' buffer."
+  (with-current-buffer (man (plist-get misc :arguments))
+    (rename-buffer buffer-name)))
+
+(when (memq 'Man-mode desktop+-special-buffer-handlers)
+  (add-hook 'Man-mode-hook 'desktop+--Man-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(Man-mode . desktop+--Man-restore-buffer)))
 
 ;; ** Inner workings
 
