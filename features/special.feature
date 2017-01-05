@@ -127,3 +127,22 @@ Feature: Handle special buffers
 
     Given I switch to buffer "*Man cat*"
     Then I should see "CAT"
+
+
+  Scenario: Handle shell directory
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-create" RET "shell" RET
+    Then Desktop session "shell" should exist
+
+    When I switch to directory "/tmp"
+    When  I start an action chain
+    And    I press "M-x"
+    And    I type "shell"
+    And    I press "RET"
+    And    I execute the action chain
+
+    Given I am in a fresh Emacs instance
+    When I call M-x "desktop+-load" RET "shell" RET
+    Then Buffer "*shell*" should exist
+    When I switch to buffer "*shell*"
+    Then Variable "default-directory" should be "/tmp/"

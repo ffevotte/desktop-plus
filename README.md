@@ -12,6 +12,7 @@
      - org agenda & todo lists (in `org-agenda-mode`)
      - indirect buffers (a.k.a clones).
      - man pages (in `Man-mode`)
+     - shell buffers (in `shell-mode`)
 
 
 
@@ -116,7 +117,8 @@ $ emacs-desktop
             compilation-mode
             org-agenda-mode
             indirect-buffer
-            Man-mode))
+            Man-mode
+            shell-mode))
     ```
 
 
