@@ -161,7 +161,8 @@ Returns the following frame title format:
     compilation-mode
     org-agenda-mode
     indirect-buffer
-    Man-mode)
+    Man-mode
+    shell-mode)
   "List of special buffers to handle.")
 
 ;; ** Entry point
@@ -315,6 +316,32 @@ from information stored in ARGS, as determined by SAVE-FN."
   (add-hook 'Man-mode-hook 'desktop+--Man-mode-hook)
   (add-to-list 'desktop-buffer-mode-handlers
                '(Man-mode . desktop+--Man-restore-buffer)))
+
+;; *** shell-mode
+
+(defun desktop+--shell-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--shell-save-buffer))
+
+(defun desktop+--shell-save-buffer (dirname)
+  "Return relevant parameters for saving a `shell-mode' buffer.
+
+Currently, it saves and restores the current working directory.
+
+The text in the buffer, as well as environment variables, shell
+variables and other state are lost."
+  (list :dir default-directory))
+
+(defun desktop+--shell-restore-buffer (file-name buffer-name misc)
+  "Restore a `shell-mode' buffer."
+  (let* ((dir (plist-get misc :dir))
+         (default-directory (if (file-directory-p dir) dir "/")))
+    (with-current-buffer (shell)
+      (rename-buffer buffer-name))))
+
+(when (memq 'shell-mode desktop+-special-buffer-handlers)
+  (add-hook 'shell-mode-hook 'desktop+--shell-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(shell-mode . desktop+--shell-restore-buffer)))
 
 ;; ** Inner workings
 

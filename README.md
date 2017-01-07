@@ -12,6 +12,7 @@
      - org agenda & todo lists (in `org-agenda-mode`)
      - indirect buffers (a.k.a clones).
      - man pages (in `Man-mode`)
+     - shell buffers (in `shell-mode`)
 
 
 
@@ -116,7 +117,8 @@ $ emacs-desktop
             compilation-mode
             org-agenda-mode
             indirect-buffer
-            Man-mode))
+            Man-mode
+            shell-mode))
     ```
 
 
@@ -146,14 +148,14 @@ hesitate to fork the repository or submit bug reports on
 ### Contributors
 
 - [Dryvenn](https://github.com/dryvenn) introduced auto-named sessions;
-- [Brian Malehorn](https://github.com/bmalehorn) contributed Man-mode buffers handling.
+- [Brian Malehorn](https://github.com/bmalehorn) contributed Man-mode and shell-mode buffers handling.
 
 Thanks!
 
 
 ## License
 
-Copyright (C) 2014-2016 François Févotte.
+Copyright (C) 2014-2017 François Févotte.
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the
