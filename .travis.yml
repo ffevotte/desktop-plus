@@ -1,23 +1,12 @@
 language: emacs-lisp
-sudo: required
 before_install:
-  # EVM for released versions
-  - test -z "$EVM_EMACS" || curl -fsSkL https://gist.github.com/rejeep/7736123/raw > travis.sh
-  - test -z "$EVM_EMACS" || source ./travis.sh
-  - test -z "$EVM_EMACS" || evm list | sort
-  - test -z "$EVM_EMACS" || evm install $EVM_EMACS --use --skip
-  # PPA for emacs nightlies
-  - test -z "$EMACS" || sudo add-apt-repository -y ppa:ubuntu-elisp/ppa
-  - test -z "$EMACS" || sudo apt-get update -qq
-  - test -z "$EMACS" || sudo apt-get install -qq -yy ${EMACS}-nox ${EMACS}-el
-  - test -z "$EMACS" || curl -fsSkL https://raw.github.com/cask/cask/master/go | python
-  - test -z "$EMACS" || export PATH="/home/travis/.cask/bin:$PATH"
-  # Install dependencies
+  - curl -fsSkL https://gist.github.com/rejeep/ebcd57c3af83b049833b/raw > x.sh && source ./x.sh
+  - evm install $EVM_EMACS --use --skip
+  - evm list | sort
   - cask
 env:
-  - EVM_EMACS=emacs-24.4-bin
-  - EVM_EMACS=emacs-24.5-bin
-  # - EMACS=emacs-snapshot
+  - EVM_EMACS=emacs-24.5-travis
+  - EVM_EMACS=emacs-25.1-travis
 script:
   - emacs --version
   - make check

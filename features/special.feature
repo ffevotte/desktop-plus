@@ -56,6 +56,8 @@ Feature: Handle special buffers
     And  I type "some content"
     And  I press "C-x C-s"
     And  I press "C-x 4 c"
+    Then Buffer "foo" should exist
+    And  Buffer "foo<2>" should exist
 
     Given I am in a fresh Emacs instance
     When I call M-x "desktop+-load" RET "indirect-buffer" RET
