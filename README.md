@@ -121,6 +121,8 @@ $ emacs-desktop
             shell-mode))
     ```
 
+- `desktop+-use-ido`: whether to use ido-mode for completing desktop names. The default is not to use ido (`nil`). To enable it you can use: `(setq desktop+-use-ido t)`.
+
 
 ## API
 
