@@ -327,15 +327,27 @@ from information stored in ARGS, as determined by SAVE-FN."
 
 Currently, it saves and restores the current working directory.
 
-The text in the buffer, as well as environment variables, shell
-variables and other state are lost."
-  (list :dir default-directory))
+Environment variables, shell variables and other state are lost."
+  (let* ((beg (save-excursion
+                (end-of-buffer)
+                (forward-line -1000)
+                (beginning-of-line)
+                (point)))
+         (contents (concat
+                    (buffer-substring beg (point-max))
+                    "\n")))
+    (list :dir default-directory
+          :contents contents)))
 
 (defun desktop+--shell-restore-buffer (file-name buffer-name misc)
   "Restore a `shell-mode' buffer."
   (let* ((dir (plist-get misc :dir))
-         (default-directory (if (file-directory-p dir) dir "/")))
-    (with-current-buffer (shell)
+         (contents (plist-get misc :contents))
+         (default-directory (if (file-directory-p dir) dir "/"))
+         (buffer (get-buffer-create "*desktop+ shell*")))
+    (with-current-buffer buffer
+      (insert contents)
+      (shell buffer)
       (rename-buffer buffer-name))))
 
 (when (memq 'shell-mode desktop+-special-buffer-handlers)
