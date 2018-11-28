@@ -110,9 +110,19 @@ automatically named after the current working directory."
   (interactive
    (list
     (completing-read "Desktop name: "
-                     (remove "."
-                             (remove ".."
-                                     (directory-files desktop+-base-dir))))))
+    ;; List desktops in the order of modification time
+    ;; Build custom completion-table with display-sort-function property 
+         (lambda (string pred action)
+           (if (eq action 'metadata)
+         '(metadata (display-sort-function . identity))
+       (complete-with-action
+        action
+        ;; Build list of directory entries sorted by time stamp
+        (remove "." (remove ".." (mapcar #'car
+                 (sort (directory-files-and-attributes desktop+-base-dir)
+                 #'(lambda (x y) (time-less-p (nth 6 x) (nth 6 y)))))))
+        string pred))))))
+
   (desktop-change-dir (desktop+--dirname name))
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
