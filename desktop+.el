@@ -343,6 +343,32 @@ variables and other state are lost."
   (add-to-list 'desktop-buffer-mode-handlers
                '(shell-mode . desktop+--shell-restore-buffer)))
 
+;; *** Eshell-mode
+
+(defun desktop+--eshell-mode-hook ()
+  (setq desktop-save-buffer #'desktop+--eshell-save-buffer))
+
+(defun desktop+--eshell-save-buffer (dirname)
+  "Return relevant parameters for saving a `eshell-mode' buffer.
+
+Currently, it saves and restores the current working directory.
+
+The text in the buffer, as well as environment variables, eshell
+variables and other state are lost."
+  (list :dir default-directory))
+
+(defun desktop+--eshell-restore-buffer (file-name buffer-name misc)
+  "Restore a `eshell-mode' buffer."
+  (let* ((dir (plist-get misc :dir))
+         (default-directory (if (file-directory-p dir) dir "/")))
+    (with-current-buffer (eshell)
+      (rename-buffer buffer-name))))
+
+(when (memq 'eshell-mode desktop+-special-buffer-handlers)
+  (add-hook 'eshell-mode-hook 'desktop+--eshell-mode-hook)
+  (add-to-list 'desktop-buffer-mode-handlers
+               '(eshell-mode . desktop+--eshell-restore-buffer)))
+
 ;; ** Inner workings
 
 (defun desktop+--buffers-file ()
