@@ -3,7 +3,9 @@
 ;; Copyright (C) 2014-2015 François Févotte
 ;; Author:  François Févotte <fevotte@gmail.com>
 ;; URL: https://github.com/ffevotte/desktop-plus
-;; Version: 0.1.1
+;; Package-Version: 20170107.2132
+;; Package-Commit: d26f369bda96860eef18365cdb5c79f39a2c765c
+;; Version: '0.1.1'
 ;; Package-Requires: ((emacs "24.4") (dash "2.11.0") (f "0.17.2"))
 
 ;; This file is NOT part of Emacs
@@ -118,6 +120,20 @@ automatically named after the current working directory."
   (desktop-save-mode 1))
 
 ;;;###autoload
+(defun desktop+-unload ()
+  "Unload the a session previously created using `desktop+-create'."
+  (interactive)
+  (desktop-kill)
+  (if desktop-dirname
+      (lambda ()
+	(desktop-save desktop-dirname)
+	(message (concat "saved " desktop-dirname "/.emacs.desktop")))
+    t)
+  (setq desktop-dirname nil)
+  (desktop+--reset-frame-title)
+  (desktop-save-mode nil))
+
+;;;###autoload
 (defun desktop+-load-auto ()
   "Load a session previously created using `desktop+-create-auto'.
 The session is identified by the current working directory."
@@ -151,6 +167,10 @@ Returns the following frame title format:
         (funcall desktop+-frame-title-function
                  (file-name-nondirectory (directory-file-name desktop-dirname)))))
 
+(defun desktop+--reset-frame-title ()
+  "Reset the frame title to Emacs' default."
+  (setq frame-title-format
+	(concat multiple-frames " %b " invocation-name "@" system-name)))
 
 ;; * Special buffers
 
