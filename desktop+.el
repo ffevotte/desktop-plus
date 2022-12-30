@@ -40,6 +40,10 @@
 ;;          is identified by its name, as given during session creation using
 ;;          `desktop-create'.
 ;;
+;;     `desktop+-unload': close the current session.
+;;
+;;     `desktop+-clear': close the other tabs and call `desktop-clear'.
+;;
 ;;     The currently active session is identified in the title bar.  You can
 ;;     customize `desktop+-frame-title-function' to change the way the active
 ;;     session is displayed.
@@ -134,11 +138,24 @@ automatically named after the current working directory."
   (desktop-save-mode nil))
 
 ;;;###autoload
+(defun desktop+-clear ()
+  "Close all the tabs and call `desktop-clear'."
+  (interactive)
+  (tab-close-other)
+  (desktop-clear))
+
+;;;###autoload
 (defun desktop+-load-auto ()
   "Load a session previously created using `desktop+-create-auto'.
 The session is identified by the current working directory."
   (interactive)
   (desktop+-load ""))
+
+(defun desktop+-clear ()
+  "Calls `desktop-clear' and closes the other tabs."
+  (interactive)
+  (tab-close-other)
+  (desktop-clear))
 
 ;; ** Inner workings
 
