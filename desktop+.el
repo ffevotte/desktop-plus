@@ -135,7 +135,7 @@ automatically named after the current working directory."
     t)
   (setq desktop-dirname nil)
   (desktop+--reset-frame-title)
-  (desktop-save-mode nil))
+  (desktop-save-mode 1))
 
 ;;;###autoload
 (defun desktop+-clear ()
