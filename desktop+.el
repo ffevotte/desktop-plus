@@ -31,8 +31,8 @@
 ;; Centralized directory storing all desktop sessions:
 ;;
 ;;     Instead of relying on Emacs' starting directory to choose the session
-;;     Emacs restarts, two functions are provided to manipulate sessions by
-;;     name.
+;;     Emacs restarts, several functions are provided to manipulate sessions
+;;     by name.
 ;;
 ;;     `desktop+-create': create a new session and give it a name.
 ;;
@@ -135,7 +135,7 @@ automatically named after the current working directory."
     t)
   (setq desktop-dirname nil)
   (desktop+--reset-frame-title)
-  (desktop-save-mode 1))
+  (desktop-save-mode "off"))
 
 ;;;###autoload
 (defun desktop+-clear ()
@@ -150,12 +150,6 @@ automatically named after the current working directory."
 The session is identified by the current working directory."
   (interactive)
   (desktop+-load ""))
-
-(defun desktop+-clear ()
-  "Calls `desktop-clear' and closes the other tabs."
-  (interactive)
-  (tab-close-other)
-  (desktop-clear))
 
 ;; ** Inner workings
 
