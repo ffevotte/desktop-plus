@@ -44,6 +44,8 @@
 ;;
 ;;     `desktop+-clear': close the other tabs and call `desktop-clear'.
 ;;
+;;     `desktop+-delete': delete a desktop session.
+;;
 ;;     The currently active session is identified in the title bar.  You can
 ;;     customize `desktop+-frame-title-function' to change the way the active
 ;;     session is displayed.
@@ -103,6 +105,17 @@ The session is created in a subdirectory of `desktop+-base-dir'.
 It can afterwards be reloaded using `desktop+-load'."
   (interactive)
   (desktop+-create ""))
+
+;;;###autoload
+(defun desktop+-delete (name)
+  "Delete the desktop under NAME."
+  (interactive
+   (list
+    (completing-read "Desktop name: "
+		     (remove "."
+			     (remove ".."
+				     (directory-files desktop+-base-dir))))))
+  (delete-directory (desktop+--dirname name) t))
 
 ;;;###autoload
 (defun desktop+-load (name)
