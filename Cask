@@ -13,8 +13,3 @@
 (depends-on "f")
 (depends-on "dash")
 (depends-on "names")
-
-
-;; Local Variables:
-;; mode: emacs-lisp
-;; End:

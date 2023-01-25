@@ -3,7 +3,7 @@
 ;; Copyright (C) 2014-2015 François Févotte
 ;; Author:  François Févotte <fevotte@gmail.com>
 ;; URL: https://github.com/ffevotte/desktop-plus
-;; Version: 0.1.1
+;; Package-Version: 0.1.2
 ;; Package-Requires: ((emacs "24.4") (dash "2.11.0") (f "0.17.2"))
 
 ;; This file is NOT part of Emacs
@@ -29,14 +29,20 @@
 ;; Centralized directory storing all desktop sessions:
 ;;
 ;;     Instead of relying on Emacs' starting directory to choose the session
-;;     Emacs restarts, two functions are provided to manipulate sessions by
-;;     name.
+;;     Emacs restarts, several functions are provided to manipulate sessions
+;;     by name.
 ;;
 ;;     `desktop+-create': create a new session and give it a name.
 ;;
 ;;     `desktop+-load': change the current session; the new session to be loaded
 ;;          is identified by its name, as given during session creation using
 ;;          `desktop-create'.
+;;
+;;     `desktop+-unload': close the current session.
+;;
+;;     `desktop+-clear': close the other tabs and call `desktop-clear'.
+;;
+;;     `desktop+-delete': delete a desktop session.
 ;;
 ;;     The currently active session is identified in the title bar.  You can
 ;;     customize `desktop+-frame-title-function' to change the way the active
@@ -99,6 +105,17 @@ It can afterwards be reloaded using `desktop+-load'."
   (desktop+-create ""))
 
 ;;;###autoload
+(defun desktop+-delete (name)
+  "Delete the desktop under NAME."
+  (interactive
+   (list
+    (completing-read "Desktop name: "
+		     (remove "."
+			     (remove ".."
+				     (directory-files desktop+-base-dir))))))
+  (delete-directory (desktop+--dirname name) t))
+
+;;;###autoload
 (defun desktop+-load (name)
   "Load a session previously created using `desktop+-create'.
 NAME is the name which was given at session creation.  When
@@ -116,6 +133,27 @@ automatically named after the current working directory."
   (desktop-change-dir (desktop+--dirname name))
   (desktop+--set-frame-title)
   (desktop-save-mode 1))
+
+;;;###autoload
+(defun desktop+-unload ()
+  "Unload the a session previously created using `desktop+-create'."
+  (interactive)
+  (desktop-kill)
+  (if desktop-dirname
+      (lambda ()
+	(desktop-save desktop-dirname)
+	(message (concat "saved " desktop-dirname "/.emacs.desktop")))
+    t)
+  (setq desktop-dirname nil)
+  (desktop+--reset-frame-title)
+  (desktop-save-mode "off"))
+
+;;;###autoload
+(defun desktop+-clear ()
+  "Close all the tabs and call `desktop-clear'."
+  (interactive)
+  (tab-close-other)
+  (desktop-clear))
 
 ;;;###autoload
 (defun desktop+-load-auto ()
@@ -151,6 +189,10 @@ Returns the following frame title format:
         (funcall desktop+-frame-title-function
                  (file-name-nondirectory (directory-file-name desktop-dirname)))))
 
+(defun desktop+--reset-frame-title ()
+  "Reset the frame title to Emacs' default."
+  (setq frame-title-format
+	(concat multiple-frames " %b " invocation-name "@" system-name)))
 
 ;; * Special buffers
 
