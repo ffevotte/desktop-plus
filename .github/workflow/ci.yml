@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  workflow_call:
+  pull_request:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version:
+          - 28.2
+          - 29.2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+      - uses: actions/cache@v4
+        id: cache-cask-packages
+        with:
+          path: .cask
+          key: cache-cask-packages-000
+      - uses: actions/cache@v4
+        id: cache-cask-executable
+        with:
+          path: ~/.cask
+          key: cache-cask-executable-000
+      - uses: cask/setup-cask@master
+        if: steps.cache-cask-executable.outputs.cache-hit != 'true'
+        with:
+          version: snapshot
+      - run: echo "$HOME/.cask/bin" >> $GITHUB_PATH
+      - name: "Install dependencies"
+        run: make build
+      - name: "Run tests"
+        run: make test
+      - name: "Ensure desktops were created"
+        run: grep -r . sandbox/desktops
